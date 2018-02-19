@@ -14,6 +14,12 @@ namespace Allflex.API.Client
         private string _apiUrl = "";
         private string _orderPath = "";
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AllflexOrderApi"/> class.
+        /// </summary>
+        /// <param name="apiKey">The API key.</param>
+        /// <param name="apiUrl">The API URL.</param>
+        /// <param name="orderPath">The order path.</param>
         public AllflexOrderApi(string apiKey, string apiUrl, string orderPath = "")
         {
             _apiKey = apiKey;
@@ -21,6 +27,11 @@ namespace Allflex.API.Client
             _orderPath = orderPath;
         }
 
+        /// <summary>
+        /// Sets the API status.
+        /// </summary>
+        /// <param name="orderStatus">The order status.</param>
+        /// <param name="status">The status.</param>
         public void SetApiStatus(AllfleXML.FlexOrderStatus.OrderStatus orderStatus, OrderStatusEnum status)
         {
             #region Send status to API
@@ -54,6 +65,11 @@ namespace Allflex.API.Client
 
 
 
+        /// <summary>
+        /// Gets the status string.
+        /// </summary>
+        /// <param name="status">The status.</param>
+        /// <returns></returns>
         public string GetStatusString(OrderStatusEnum status)
         {
             return Enum.GetName(typeof(OrderStatusEnum), status);
@@ -64,6 +80,11 @@ namespace Allflex.API.Client
             return (OrderStatusEnum)Enum.Parse(typeof(OrderStatusEnum), status);
         }
 
+        /// <summary>
+        /// Sends the status.
+        /// </summary>
+        /// <param name="status">The status.</param>
+        /// <returns></returns>
         public bool SendStatus(AllfleXML.FlexOrderStatus.OrderStatus status)
         {
             using (var client = new HttpClient())
@@ -97,6 +118,11 @@ namespace Allflex.API.Client
             return true;
         }
 
+        /// <summary>
+        /// Gets the order status.
+        /// </summary>
+        /// <param name="wsOrderId">The ws order identifier.</param>
+        /// <returns></returns>
         public OrderStatus GetOrderStatus(string wsOrderId)
         {
             var orderStatus = new OrderStatus();
@@ -136,6 +162,11 @@ namespace Allflex.API.Client
         }
 
 
+        /// <summary>
+        /// Retrieves the orders from API.
+        /// </summary>
+        /// <param name="saveFile">if set to <c>true</c> [save file].</param>
+        /// <returns></returns>
         public AllfleXML.FlexOrder.Document RetrieveOrdersFromAPI(bool saveFile)
         {
             using (var client = new HttpClient())
