@@ -4,6 +4,8 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Xml.Linq;
 using AllfleXML.FlexOrderStatus;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Allflex.API.Client
 {
@@ -26,44 +28,7 @@ namespace Allflex.API.Client
             _apiUrl = apiUrl;
             _orderPath = orderPath;
         }
-
-        /// <summary>
-        /// Sets the API status.
-        /// </summary>
-        /// <param name="orderStatus">The order status.</param>
-        /// <param name="status">The status.</param>
-        public void SetApiStatus(AllfleXML.FlexOrderStatus.OrderStatus orderStatus, OrderStatusEnum status)
-        {
-            #region Send status to API
-
-            try
-            {
-                var statusstring = GetStatusString(status);
-                
-                if (!string.IsNullOrWhiteSpace(orderStatus.WSOrderId))
-                {
-                    // send the status
-                    var msg = "";
-                    if (SendStatus(orderStatus))
-                    {
-                        msg = $"Status of '{orderStatus} sent to Api for {orderStatus.WSOrderId}, Allflex Order {orderStatus.OrderId}'";
-                    }
-                    else
-                    {
-                        msg = $"Error sending Api Status for Api Order {orderStatus.WSOrderId}";
-                    }
-                }
-            }
-            catch (Exception e)
-            {
-                var message = $"There was an issue setting the status for the API for order {orderStatus.OrderId}, with API id {orderStatus.WSOrderId}:\n\n";
-                message += $"{e.Message} - {e.InnerException.Message}";
-                Console.WriteLine(message);
-            }
-            #endregion
-        }
-
-
+        
 
         /// <summary>
         /// Gets the status string.
@@ -85,7 +50,7 @@ namespace Allflex.API.Client
         /// </summary>
         /// <param name="status">The status.</param>
         /// <returns></returns>
-        public bool SendStatus(AllfleXML.FlexOrderStatus.OrderStatus status)
+        public bool PostStatus(AllfleXML.FlexOrderStatus.OrderStatus status)
         {
             using (var client = new HttpClient())
             {
@@ -212,6 +177,60 @@ namespace Allflex.API.Client
                 {
                     var message = $"There was an issue with pulling orders from the API for processing:\n\n";
                     message += $"{e.Message} - {e.InnerException.Message}";
+                    Console.WriteLine(message);
+                    return null;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Posts the order to flex service asynchronous.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public AllfleXML.FlexOrder.Document PostOrder(AllfleXML.FlexOrder.OrderHeader order)
+        {          
+
+            using (var client = new HttpClient())
+            {
+                var secretToken = _apiKey;
+
+                var orderReceived = new AllfleXML.FlexOrder.Document();
+
+                try
+                {
+
+                    client.BaseAddress = new Uri(_apiUrl);
+                    client.DefaultRequestHeaders.Accept.Clear();
+
+                    client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _apiKey);
+                    client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
+
+                    var document = new AllfleXML.FlexOrder.Document
+                    {
+                        OrderHeaders = new List<AllfleXML.FlexOrder.OrderHeader>()
+                    };
+
+                    document.OrderHeaders.Add(order);
+
+
+                    var putMessage = new StringContent(AllfleXML.FlexOrder.Parser.Export(order).ToString(), Encoding.UTF8, "application/xml");
+
+                    var response = client.PostAsync("api/orders", putMessage).Result;
+                    if (!response.IsSuccessStatusCode)
+                    {
+                        throw new Exception($"Could not post {order.PO} to {_apiUrl}/api/orders");
+                    }
+
+
+                    orderReceived = AllfleXML.FlexOrder.Parser.Import(XDocument.Parse(response.Content.ReadAsStringAsync().Result));
+                    return orderReceived;
+                }
+                catch (Exception e)
+                {
+                    var message = $"There was an issue saving the order {order.PO} to the Allflex Order API:\n\n";
+                    message += $"{e.Message} - {e.InnerException?.Message}";
                     Console.WriteLine(message);
                     return null;
                 }
