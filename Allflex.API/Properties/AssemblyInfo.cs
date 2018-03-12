@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("Allflex.API.Client")]
-[assembly: AssemblyDescription("")]
+[assembly: AssemblyTitle("Allflex.API")]
+[assembly: AssemblyDescription("Library to assist with client operations using the Allflex API")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("Allflex.API.Client")]
-[assembly: AssemblyCopyright("Copyright ©  2018")]
+[assembly: AssemblyProduct("Allflex.API")]
+[assembly: AssemblyCopyright("Copyright © Allflex USA, Inc. 2018")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
