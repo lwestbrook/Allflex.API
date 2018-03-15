@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.27004.2009
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Allflex.API", "Allflex.API\Allflex.API.csproj", "{26B14822-D302-40BC-B32D-DE89BB5E3DDA}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Allflex.API.Test", "Allflex.API.Test\Allflex.API.Test.csproj", "{B514637A-E3B6-4BAE-B067-0B7F52091647}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{26B14822-D302-40BC-B32D-DE89BB5E3DDA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{26B14822-D302-40BC-B32D-DE89BB5E3DDA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{26B14822-D302-40BC-B32D-DE89BB5E3DDA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B514637A-E3B6-4BAE-B067-0B7F52091647}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B514637A-E3B6-4BAE-B067-0B7F52091647}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B514637A-E3B6-4BAE-B067-0B7F52091647}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B514637A-E3B6-4BAE-B067-0B7F52091647}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

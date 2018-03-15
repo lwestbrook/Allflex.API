@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Text;
+using System.Xml.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
-using System.Xml.Linq;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using AllfleXML.FlexOrder;
 using AllfleXML.FlexOrderStatus;
 
 namespace Allflex.API
@@ -25,7 +26,7 @@ namespace Allflex.API
             _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + apiKey);
             _client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/xml"));
         }
-        
+
         /// <summary>
         /// Gets the status string.
         /// </summary>
@@ -58,21 +59,16 @@ namespace Allflex.API
         public async Task<bool> PostStatusAsync(AllfleXML.FlexOrderStatus.OrderStatus status)
         {
             var endpoint = $"/api/orders/status/{status.WSOrderId}";
-            try
-            {
-                var putMessage = new StringContent(status.Export().ToString(), Encoding.UTF8, "application/xml");
+            var putMessage = new StringContent(status.Export().ToString(), Encoding.UTF8, "application/xml");
 
-                var response = await _client.PostAsync(endpoint, putMessage);
-                return response.IsSuccessStatusCode;
-            }
-            catch (Exception e)
+            var response = await _client.PostAsync(endpoint, putMessage);
+            if (!response.IsSuccessStatusCode)
             {
-                var message = $"There was an issue with sending the status for the API for order {status.OrderId}, with API id {status.WSOrderId}:\n\n";
-                message += $"{e.Message} - {e.InnerException.Message}";
-                Console.WriteLine(message);
-                throw;
+                var httpErrorObject = await response.Content.ReadAsStringAsync();
+                var uri = new Uri(_client.BaseAddress, endpoint);
+                throw new Exception($"Bad response from {uri.ToString()}: {response.StatusCode} - {response.ReasonPhrase}\nThere was an issue with sending the status for the API for order {status.OrderId}, with API id {status.WSOrderId}\n{httpErrorObject}");
             }
-
+            return response.IsSuccessStatusCode;
         }
 
         /// <summary>
@@ -93,25 +89,51 @@ namespace Allflex.API
         public async Task<AllfleXML.FlexOrderStatus.OrderStatus> GetOrderStatusAsync(string wsOrderId)
         {
             var endpoint = $"/api/orders/status/{wsOrderId}";
-            try
-            {
-                var response = await _client.GetAsync(endpoint);
+            var response = await _client.GetAsync(endpoint);
 
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Bad response: {response.StatusCode} - {response.ReasonPhrase}");
-                }
-
-                var result = await response.Content.ReadAsStringAsync();
-                return AllfleXML.FlexOrderStatus.Parser.Import(XDocument.Parse(result));
-            }
-            catch (Exception e)
+            if (!response.IsSuccessStatusCode)
             {
-                var message = $"There was an issue with pulling the order status for {wsOrderId} from the API for processing:\n\n";
-                message += $"{e.Message} - {e.InnerException?.Message}";
-                Console.WriteLine(message);
-                throw;
+                var httpErrorObject = await response.Content.ReadAsStringAsync();
+                var uri = new Uri(_client.BaseAddress, endpoint);
+                throw new Exception($"Bad response from {uri.ToString()}: {response.StatusCode} - {response.ReasonPhrase}\nThere was an issue with pulling the order status for {wsOrderId} from the API for processing\n{httpErrorObject}");
             }
+
+            var result = await response.Content.ReadAsStringAsync();
+            return AllfleXML.FlexOrderStatus.Parser.Import(XDocument.Parse(result));
+        }
+
+        /// <summary>
+        /// Posts the order to flex service.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public AllfleXML.FlexOrder.OrderHeader PostOrder(AllfleXML.FlexOrder.OrderHeader order)
+        {
+            return PostOrderAsync(order).Result;
+        }
+
+        /// <summary>
+        /// Posts the order to flex service asynchronous.
+        /// </summary>
+        /// <param name="order">The order.</param>
+        /// <returns></returns>
+        /// <exception cref="Exception"></exception>
+        public async Task<AllfleXML.FlexOrder.OrderHeader> PostOrderAsync(AllfleXML.FlexOrder.OrderHeader order)
+        {
+            var endpoint = "api/orders";
+            var putMessage = new StringContent(order.Export().ToString(), Encoding.UTF8, "text/xml");
+            var response = await _client.PostAsync(endpoint, putMessage);
+
+            if (!response.IsSuccessStatusCode)
+            {
+                var httpErrorObject = await response.Content.ReadAsStringAsync();
+                var uri = new Uri(_client.BaseAddress, endpoint);
+                throw new Exception($"Bad response from {uri.ToString()}: {response.StatusCode} - {response.ReasonPhrase}\nThere was an issue saving the purchase order {order.PO} to the Allflex Order API\n{httpErrorObject}");
+            }
+
+            var result = await response.Content.ReadAsStringAsync();
+            return AllfleXML.FlexOrder.Parser.Import(XDocument.Parse(result)).OrderHeaders.SingleOrDefault();
         }
 
         /// <summary>
@@ -132,100 +154,16 @@ namespace Allflex.API
         public async Task<AllfleXML.FlexOrder.Document> RetrieveOrdersAsync()
         {
             var endpoint = "api/orders/process";
-            try
+            var response = await _client.GetAsync(endpoint);
+            if (!response.IsSuccessStatusCode)
             {
-                var response = await _client.GetAsync(endpoint);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var uri = new Uri(_client.BaseAddress, endpoint);
-                    throw new Exception($"Bad response from {uri.ToString()}: {response.StatusCode} - {response.ReasonPhrase}");
-                }
-
-                var result = await response.Content.ReadAsStringAsync();
-                return AllfleXML.FlexOrder.Parser.Import(XDocument.Parse(result));
+                var httpErrorObject = await response.Content.ReadAsStringAsync();
+                var uri = new Uri(_client.BaseAddress, endpoint);
+                throw new Exception($"Bad response from {uri.ToString()}: {response.StatusCode} - {response.ReasonPhrase}\nThere was an issue with pulling orders from the API for processing\n{httpErrorObject}");
             }
-            catch (Exception e)
-            {
-                var message = $"There was an issue with pulling orders from the API for processing:\n\n";
-                message += $"{e.Message} - {e.InnerException.Message}";
-                Console.WriteLine(message);
-                throw;
-            }
-        }
 
-        /// <summary>
-        /// Posts the order to flex service.
-        /// </summary>
-        /// <param name="order">The order.</param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public AllfleXML.FlexOrder.Document PostOrder(AllfleXML.FlexOrder.OrderHeader order)
-        {
-            return PostOrderAsync(order).Result;
-        }
-
-        /// <summary>
-        /// Posts the order to flex service asynchronous.
-        /// </summary>
-        /// <param name="order">The order.</param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public async Task<AllfleXML.FlexOrder.Document> PostOrderAsync(AllfleXML.FlexOrder.OrderHeader order)
-        {
-            var document = new AllfleXML.FlexOrder.Document
-            {
-                OrderHeaders = new List<AllfleXML.FlexOrder.OrderHeader> { order }
-            };
-
-            return await PostOrderAsync(document);
-        }
-
-        /// <summary>
-        /// Posts the order to flex service.
-        /// </summary>
-        /// <param name="order">The order.</param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public AllfleXML.FlexOrder.Document PostOrder(AllfleXML.FlexOrder.Document document)
-        {
-            return PostOrderAsync(document).Result;
-        }
-
-        /// <summary>
-        /// Posts the order to flex service asynchronous.
-        /// </summary>
-        /// <param name="order">The order.</param>
-        /// <returns></returns>
-        /// <exception cref="Exception"></exception>
-        public async Task<AllfleXML.FlexOrder.Document> PostOrderAsync(AllfleXML.FlexOrder.Document document)
-        {
-            var endpoint = "api/orders";
-            try
-            {
-                var putMessage = new StringContent(AllfleXML.FlexOrder.Parser.Export(document).ToString(), Encoding.UTF8, "application/xml");
-
-                var response = await _client.PostAsync(endpoint, putMessage);
-                if (!response.IsSuccessStatusCode)
-                {
-                    var uri = new Uri(_client.BaseAddress, endpoint);
-                    var message = $"Error at {uri.ToString()}";
-                    foreach (var order in document.OrderHeaders)
-                    {
-                        message += $"\nCould not post {order.PO}";
-                    }
-                    throw new Exception(message);
-                }
-
-                var result = await response.Content.ReadAsStringAsync();
-                return AllfleXML.FlexOrder.Parser.Import(XDocument.Parse(result));
-            }
-            catch (Exception e)
-            {
-                var message = $"There was an issue saving the order to the Allflex Order API:\n\n";
-                message += $"{e.Message} - {e.InnerException?.Message}";
-                Console.WriteLine(message);
-                throw;
-            }
+            var result = await response.Content.ReadAsStringAsync();
+            return AllfleXML.FlexOrder.Parser.Import(XDocument.Parse(result));
         }
 
         public void Dispose()
