@@ -12,6 +12,7 @@
         QcChecked,// QC Checked (%)
         Dispatched, //
         Shipped,
-        Invoiced
+        Invoiced,
+        Canceled
     }
 }
