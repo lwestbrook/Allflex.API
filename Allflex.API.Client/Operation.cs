@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -56,7 +57,8 @@ namespace Allflex.API.Client
         public async Task<bool> PostStatusAsync(AllfleXML.FlexOrderStatus.OrderStatus status)
         {
             var endpoint = $"/api/orders/status/{status.WSOrderId}";
-            var putMessage = new StringContent(status.Export().ToString(), Encoding.UTF8, "application/xml");
+            var body = AllfleXML.FlexOrderStatus.Parser.Export(status).ToString();
+            var putMessage = new StringContent(body, Encoding.UTF8, "application/xml");
 
             var response = await _client.PostAsync(endpoint, putMessage);
             if (!response.IsSuccessStatusCode)
@@ -119,7 +121,8 @@ namespace Allflex.API.Client
         public async Task<AllfleXML.FlexOrder.OrderHeader> PostOrderAsync(AllfleXML.FlexOrder.OrderHeader order)
         {
             var endpoint = "api/orders";
-            var putMessage = new StringContent(order.Export().ToString(), Encoding.UTF8, "text/xml");
+            var body = AllfleXML.FlexOrder.Parser.Export(order).ToString();
+            var putMessage = new StringContent(body, Encoding.UTF8, "text/xml");
             var response = await _client.PostAsync(endpoint, putMessage);
 
             if (!response.IsSuccessStatusCode)
