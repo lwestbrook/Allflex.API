@@ -11,7 +11,6 @@ namespace Allflex.API.Client
 {
     public class AllflexOrderApi
     {
-
         private string _apiKey = "";
         private string _apiUrl = "";
         private string _orderPath = "";
@@ -29,7 +28,6 @@ namespace Allflex.API.Client
             _orderPath = orderPath;
         }
         
-
         /// <summary>
         /// Gets the status string.
         /// </summary>
@@ -125,8 +123,7 @@ namespace Allflex.API.Client
 
             return orderStatus;
         }
-
-
+        
         /// <summary>
         /// Retrieves the orders from API.
         /// </summary>
