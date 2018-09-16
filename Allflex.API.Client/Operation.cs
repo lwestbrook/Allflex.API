@@ -56,7 +56,7 @@ namespace Allflex.API.Client
         /// <returns></returns>
         public async Task<bool> PostStatusAsync(AllfleXML.FlexOrderStatus.OrderStatus status)
         {
-            var endpoint = $"/api/orders/status/{status.WSOrderId}";
+            var endpoint = $"/api/admin/orders/status/{status.WSOrderId}";
             var body = AllfleXML.FlexOrderStatus.Parser.Export(status).ToString();
             var putMessage = new StringContent(body, Encoding.UTF8, "application/xml");
 
@@ -101,6 +101,8 @@ namespace Allflex.API.Client
             return AllfleXML.FlexOrderStatus.Parser.Import(XDocument.Parse(result));
         }
 
+        // TODO: Quote Order
+
         /// <summary>
         /// Posts the order to flex service.
         /// </summary>
@@ -136,6 +138,28 @@ namespace Allflex.API.Client
             return AllfleXML.FlexOrder.Parser.Import(XDocument.Parse(result)).OrderHeaders.SingleOrDefault();
         }
 
+        public AllfleXML.FlexOrder.OrderHeader ViewOrder(Guid wsOrderId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<AllfleXML.FlexOrder.OrderHeader> ViewOrderAsync(Guid wsOrderId)
+        {
+            // GET
+            throw new NotImplementedException();
+        }
+
+        public bool DeleteOrder(Guid wsOrderId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<bool> DeleteOrderAsync(Guid wsOrderId)
+        {
+            // DELETE
+            throw new NotImplementedException();
+        }
+
         /// <summary>
         /// Retrieves all orders.
         /// </summary>
@@ -153,7 +177,7 @@ namespace Allflex.API.Client
         /// <returns></returns>
         public async Task<AllfleXML.FlexOrder.Document> RetrieveOrdersAsync()
         {
-            var endpoint = "api/orders/process";
+            var endpoint = "api/admin/orders/process";
             var response = await _client.GetAsync(endpoint);
             if (!response.IsSuccessStatusCode)
             {
@@ -165,6 +189,70 @@ namespace Allflex.API.Client
             var result = await response.Content.ReadAsStringAsync();
             return AllfleXML.FlexOrder.Parser.Import(XDocument.Parse(result));
         }
+
+        public AllfleXML.FlexSpec.Specification CreateSpecification(AllfleXML.FlexSpec.Specification spec)
+        {
+            return CreateSpecificationAsync(spec).Result;
+        }
+
+        public async Task<AllfleXML.FlexSpec.Specification> CreateSpecificationAsync(AllfleXML.FlexSpec.Specification spec)
+        {
+            // admin
+            // POST
+            throw new NotImplementedException();
+        }
+
+        public bool DeleteSpecification(Guid specId)
+        {
+            return DeleteSpecificationAsync(specId).Result;
+        }
+
+        public async Task<bool> DeleteSpecificationAsync(Guid specId)
+        {
+            // admin
+            // DELETE
+            throw new NotImplementedException();
+        }
+
+        public bool DeleteSpecification(string name)
+        {
+            return DeleteSpecificationAsync(name).Result;
+        }
+
+        public async Task<bool> DeleteSpecificationAsync(string name)
+        {
+            // admin
+            // DELETE
+            throw new NotImplementedException();
+        }
+
+        public AllfleXML.FlexSpec.Specification GetSpecification(string name)
+        {
+            return GetSpecificationAsync(name).Result;
+        }
+
+        public async Task<AllfleXML.FlexSpec.Specification> GetSpecificationAsync(string name)
+        {
+            // GET
+            throw new NotImplementedException();
+        }
+
+        public AllfleXML.FlexSpec.Specification GetSpeccification(Guid specId)
+        {
+            return GetSpecificationAsync(specId).Result;
+        }
+
+        public async Task<AllfleXML.FlexSpec.Specification> GetSpecificationAsync(Guid specId)
+        {
+            // GET
+            throw new NotImplementedException();
+        }
+        
+        // TODO: Get shilouette
+
+        // TODO: Get Outline
+
+        // TODO: Get Logo
 
         public void Dispose()
         {
