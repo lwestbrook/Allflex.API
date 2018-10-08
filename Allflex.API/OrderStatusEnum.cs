@@ -2,8 +2,10 @@
 {
     public enum OrderStatusEnum
     {
+        Invalid = 0,
         Created,
         Error,
+        Hold,
         CustomerUpdated,
         Confirmed,
         InSelection, // Job In Review / Prestage
